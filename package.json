@@ -1,0 +1,16 @@
+{
+  "name": "plastic-trace-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Blockchain-Based Plastic Waste Traceability System",
+  "scripts": {
+    "blockchain:install": "cd blockchain && npm install",
+    "blockchain:test": "cd blockchain && npm test",
+    "blockchain:node": "cd blockchain && npx hardhat node",
+    "blockchain:deploy": "cd blockchain && npm run deploy",
+    "blockchain:seed": "cd blockchain && npm run seed",
+    "frontend:install": "cd frontend && npm install",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build"
+  }
+}
