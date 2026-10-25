@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { initiateTransfer, confirmReceipt, HARDHAT_ACCOUNTS } from "../services/blockchain";
 import TransactionFeedback from "../components/TransactionFeedback";
-import { ArrowLeftRight, Truck, CheckCircle2, ShieldCheck, AlertCircle, MapPin, User } from "lucide-react";
+import { ArrowLeftRight, Truck, CheckCircle2, ShieldCheck, AlertCircle, MapPin, User, ArrowRight, Sparkles } from "lucide-react";
 
 export default function TransferReceive({
   currentAccount,
@@ -10,6 +10,7 @@ export default function TransferReceive({
   onRefresh,
   onNavigate,
   onSelectBatch,
+  onSwitchToAddress,
 }) {
   const [activeTab, setActiveTab] = useState("transfer"); // 'transfer' | 'receive'
   const [loading, setLoading] = useState(false);
@@ -107,6 +108,20 @@ export default function TransferReceive({
       return;
     }
 
+    // Verify recipient before submitting to prevent revert
+    const targetBatch = batches.find((b) => b.batchId === receiveBatchId);
+    if (targetBatch && targetBatch.pendingRecipient.toLowerCase() !== currentAccount.address.toLowerCase()) {
+      const recipientAcc = HARDHAT_ACCOUNTS.find(
+        (a) => a.address.toLowerCase() === targetBatch.pendingRecipient.toLowerCase()
+      );
+      setError(
+        `PlasticTrace: Caller is not the designated recipient. Batch ${receiveBatchId} was transferred to ${
+          recipientAcc?.name || targetBatch.pendingRecipient
+        }. You must switch to that persona to confirm receipt.`
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await confirmReceipt(
@@ -124,6 +139,15 @@ export default function TransferReceive({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSwitchAndAccept = (targetBatch) => {
+    setError(null);
+    if (onSwitchToAddress) {
+      onSwitchToAddress(targetBatch.pendingRecipient);
+    }
+    setReceiveBatchId(targetBatch.batchId);
+    setActiveTab("receive");
   };
 
   return (
@@ -276,10 +300,47 @@ export default function TransferReceive({
             {pendingForMe.length === 0 ? (
               <div style={{ textAlign: "center", padding: "2rem 1rem", color: "var(--text-light)" }}>
                 <Truck size={36} style={{ opacity: 0.3, marginBottom: "0.5rem" }} />
-                <div>No pending transfers currently assigned to your wallet address.</div>
+                <div>No pending transfers currently assigned to your active wallet address.</div>
                 {allInTransit.length > 0 && (
-                  <div style={{ marginTop: "0.75rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                    There are {allInTransit.length} batch(es) in transit for other stakeholders. Switch to the designated recipient persona via the top-right button to confirm.
+                  <div style={{ marginTop: "1rem", padding: "1rem", background: "var(--bg-subtle)", borderRadius: "var(--radius-sm)", textAlign: "left" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--text-main)", marginBottom: "0.5rem" }}>
+                      ⚡ In-Transit Batches Awaiting Acceptance by Other Stakeholders:
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      {allInTransit.map((b) => {
+                        const targetAcc = HARDHAT_ACCOUNTS.find(
+                          (a) => a.address.toLowerCase() === b.pendingRecipient.toLowerCase()
+                        );
+                        return (
+                          <div
+                            key={b.batchId}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              background: "#ffffff",
+                              padding: "0.6rem 0.85rem",
+                              borderRadius: "4px",
+                              border: "1px solid var(--border-color)",
+                            }}
+                          >
+                            <div>
+                              <strong className="mono" style={{ color: "var(--primary)" }}>{b.batchId}</strong> ({b.plasticType}, {b.currentQuantity} kg)
+                              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginLeft: "0.5rem" }}>
+                                Waiting for: <strong>{targetAcc?.name || b.pendingRecipient.substring(0, 8)}</strong>
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-sm"
+                              onClick={() => handleSwitchAndAccept(b)}
+                            >
+                              <Sparkles size={12} /> Switch to {targetAcc?.role || "Recipient"} & Accept
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -366,6 +427,9 @@ export default function TransferReceive({
                   <tbody>
                     {allInTransit.map((b) => {
                       const isPendingForMe = b.pendingRecipient.toLowerCase() === currentAccount.address.toLowerCase();
+                      const targetAcc = HARDHAT_ACCOUNTS.find(
+                        (a) => a.address.toLowerCase() === b.pendingRecipient.toLowerCase()
+                      );
                       return (
                         <tr key={b.batchId}>
                           <td className="mono" style={{ fontWeight: 600, color: "var(--primary)" }}>
@@ -376,27 +440,28 @@ export default function TransferReceive({
                           <td className="mono" style={{ fontSize: "0.75rem" }}>
                             {b.currentCustodian.substring(0, 6)}...{b.currentCustodian.substring(38)}
                           </td>
-                          <td className="mono" style={{ fontSize: "0.75rem" }}>
-                            {b.pendingRecipient.substring(0, 6)}...{b.pendingRecipient.substring(38)}
+                          <td style={{ fontSize: "0.8rem" }}>
+                            <strong>{targetAcc?.name || b.pendingRecipient.substring(0, 8)}</strong>
                             {isPendingForMe && <span className="status-badge received" style={{ marginLeft: "6px" }}>You</span>}
                           </td>
                           <td>
                             {isPendingForMe ? (
                               <button
                                 className="btn btn-primary btn-sm"
-                                onClick={() => setReceiveBatchId(b.batchId)}
+                                onClick={() => {
+                                  setReceiveBatchId(b.batchId);
+                                  setActiveTab("receive");
+                                }}
                               >
-                                Accept
+                                Accept Custody
                               </button>
                             ) : (
                               <button
-                                className="btn btn-secondary btn-sm"
-                                onClick={() => {
-                                  onSelectBatch(b.batchId);
-                                  onNavigate("tracking");
-                                }}
+                                className="btn btn-outline-primary btn-sm"
+                                onClick={() => handleSwitchAndAccept(b)}
+                                title={`Switch persona to ${targetAcc?.name} and confirm receipt`}
                               >
-                                View
+                                Switch to {targetAcc?.role || "Recipient"} & Accept
                               </button>
                             )}
                           </td>

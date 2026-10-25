@@ -198,6 +198,18 @@ export default function App() {
     }
   };
 
+  const handleSwitchToAddress = async (targetAddress) => {
+    const idx = HARDHAT_ACCOUNTS.findIndex(
+      (a) => a.address.toLowerCase() === targetAddress.toLowerCase()
+    );
+    if (idx !== -1) {
+      setAuthMode("simulated");
+      setCurrentAccountIndex(idx);
+      const newSigner = await getSigner("simulated", idx);
+      setSigner(newSigner);
+    }
+  };
+
   const currentAccount = HARDHAT_ACCOUNTS[currentAccountIndex] || HARDHAT_ACCOUNTS[1];
 
   return (
@@ -257,6 +269,7 @@ export default function App() {
               onRefresh={() => refreshAllData(false)}
               onNavigate={setActiveTab}
               onSelectBatch={setSelectedBatchId}
+              onSwitchToAddress={handleSwitchToAddress}
             />
           )}
 
@@ -268,6 +281,7 @@ export default function App() {
               onRefresh={() => refreshAllData(false)}
               onNavigate={setActiveTab}
               onSelectBatch={setSelectedBatchId}
+              onSwitchToAddress={handleSwitchToAddress}
             />
           )}
 
