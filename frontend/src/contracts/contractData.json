@@ -1,8 +1,8 @@
 {
   "network": "localhost",
   "chainId": 31337,
-  "contractAddress": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-  "deployedAt": "2026-10-25T06:27:36.159Z",
+  "contractAddress": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+  "deployedAt": "2026-10-25T18:27:11.691Z",
   "stakeholders": {
     "admin": {
       "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",

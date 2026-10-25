@@ -97,6 +97,6 @@ $$\text{Quantity Processed} = \text{Recycled Output} + \text{Residual Waste}$$
 2. **Accountability:** Every state change is cryptographically signed by the caller's private key.
 3. **Auditability:** Independent certifiers and consumers can inspect the exact block, gas used, and event parameters.
 
-### Physical Real-World Limitations (Viva Defense Point):
+### Physical Real-World Limitations :
 - **Garbage In, Garbage Out (GIGO):** The blockchain guarantees the integrity of the *ledger*, not the *physical plastic*. If a rogue actor physically dumps waste in a river while claiming to have recycled it on-chain, the blockchain will faithfully record the fraudulent claim.
 - **Physical Verification:** In production systems, physical IoT scales, RFID tags on bales, and chemical tracer technologies (such as markers used by IBM Plastic Bank or Asahi Kasei BLUE Plastics) must bridge the physical and digital domains.
