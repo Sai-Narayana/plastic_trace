@@ -27,7 +27,7 @@ export const HARDHAT_ACCOUNTS = [
     role: "CollectionCenter",
     roleId: 3,
     name: "City EcoSorting Hub",
-    privateKey: "0x5de4111afa1a4b94908f83103eb2f95404b08705a8b7921287c9569032be432e",
+    privateKey: "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
     description: "Receives collected batches, sorts resins, transfers to Recyclers",
   },
   {
